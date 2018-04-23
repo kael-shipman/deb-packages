@@ -1,0 +1,11 @@
+Package: ks-system-hub1
+Version: 0.2.0
+Section: contrib/ks
+Priority: optional
+Architecture: all
+Depends: ks-configs, ks-stubs-hub1, syncthing, hd-idle (>= 1.0), ddnsd, debconf
+Provides: ks-system
+Installed-Size: 0
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: A meta-package that aggregates the correct dependencies and runtime configurations for my system hub1
+

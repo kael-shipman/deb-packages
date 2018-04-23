@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+ACTION="$1"
+if [ "$DEBCONF_RECONFIGURE" == '1' ]; then
+    ACTION="reconfigure"
+fi
+
+
+
+db_get ks-configs/runtime-path
+RUNTIME_PATH="$RET"
+
+if [ ! -d "$RUNTIME_PATH" ]; then
+    {
+        echo "Couldn't find runtime path \`$RUNTIME_PATH\`. Are you sure you've copied it over"
+        echo "to this instance yet?"
+        echo
+        echo "You'll have to ensure this directory is in place before proceeding with the install."
+    } >&2
+    exit 2
+fi
+
+echo "Runtime configs found."
+
+
+
+## Don't run if upgrading from already-installed version
+#if [ "$ACTION" != 'triggered' ] && ([ -z "$2" ] || [ "$ACTION" != 'configure' ]); then
+#    echo "Installing for the first time, or reinstalling after failure...."
+#
+## Run if triggered
+#elif [ "$ACTION" == 'triggered' ]; then
+#    echo "Trigger fired: $2"
+#fi
+

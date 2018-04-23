@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+LOOP=true
+ERR=
+
+while [ "$LOOP" == true ]; do
+    if [ -n "$ERR" ]; then
+        db_subst ks-configs/runtime-path 'ERROR' "$ERR" || true
+    fi
+    db_input high ks-configs/runtime-path || true
+    db_go
+
+    db_get ks-configs/runtime-path
+    RUNTIME_PATH="$(echo "$RET" | sed "s#~#$HOME#")"
+    if [ -d "$RUNTIME_PATH" ]; then
+        RUNTIME_PATH="$(readlink -f "$RUNTIME_PATH")"
+    fi
+
+    if [ ! -d "$RUNTIME_PATH/Configs" ] || [ ! -d "$RUNTIME_PATH/Data" ]; then
+        ERR="Hm... The path you entered doesn't look like a runtime path (can't find \`Data\` or \`Configs\` sub-directories)"
+        db_fset ks-configs/runtime-path seen false
+    else
+        db_set ks-configs/runtime-path "$RUNTIME_PATH"
+        LOOP=false
+    fi
+done
+
