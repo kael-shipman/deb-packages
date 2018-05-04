@@ -1,0 +1,60 @@
+#!/bin/bash
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+ACTION="$1"
+if [ "$DEBCONF_RECONFIGURE" == '1' ]; then
+    ACTION="reconfigure"
+fi
+
+
+
+
+# Set env vars
+nm=home
+
+
+
+
+
+# Don't run if upgrading from already-installed version
+if [ "$ACTION" != 'triggered' ] && ([ -z "$2" ] || [ "$ACTION" != 'configure' ]); then
+
+    # Get runtime path
+    db_get ks-configs/runtime-path
+    RP="$RET"
+
+
+    # Sanity check and installation preps
+    if [ -n "$SUDO_USER" ]; then
+        HOME="/home/$SUDO_USER"
+    fi
+    if [ -z "$HOME" ]; then
+        >&2 echo "E: Your \$HOME variable isn't set, but this is necessary to install certain"
+        >&2 echo "   configurations. You should run this using 'sudo' from your normal user"
+        >&2 echo "   account, rather than using 'su'."
+        exit 2
+    fi
+    mkdir -p "$HOME/.config/syncthing"
+
+
+    # Link Configs
+    ln -snf "$RP/Configs/syncthing/$nm.config.xml" "$HOME/.config/syncthing/config.xml"
+
+    systemctl enable --now syncthing@kael.timer
+
+
+
+
+
+
+
+
+# Run if triggered
+elif [ "$ACTION" == 'triggered' ]; then
+    echo "Trigger fired: $2"
+fi
+
+

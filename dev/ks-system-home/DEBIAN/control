@@ -1,0 +1,10 @@
+Package: ks-system-home
+Version: 1.0.0
+Section: contrib/ks
+Priority: optional
+Architecture: amd64
+Depends: ks-configs, syncthing
+Installed-Size: 0
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: My home computer setup
+

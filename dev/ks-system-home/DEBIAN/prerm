@@ -1,0 +1,9 @@
+#!/bin/bash
+
+. /usr/share/debconf/confmodule
+
+if [ "$1" != 'upgrade' ]; then
+    systemctl disable --now syncthing@kael.timer
+    rm "$HOME/.config/syncthing/config.xml"
+fi
+
