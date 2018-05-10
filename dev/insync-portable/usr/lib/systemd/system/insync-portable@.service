@@ -1,0 +1,13 @@
+[Unit]
+Description=insync-portable daemon
+Wants=network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+User=%i
+Type=simple
+ExecStart=/usr/bin/insync-portable start --no-daemon
+ExecStop=/usr/bin/insync-portable quit
+

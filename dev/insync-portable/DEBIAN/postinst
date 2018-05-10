@@ -1,0 +1,81 @@
+#!/bin/bash
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+ACTION="$1"
+if [ "$DEBCONF_RECONFIGURE" == '1' ]; then
+    ACTION="reconfigure"
+fi
+
+# Only run this on a fresh install
+if [ "$ACTION" != 'triggered' ] && ([ -z "$2" ] || [ "$ACTION" != 'configure' ]); then
+    # Download and install
+    rm -Rf /opt/insync* || true
+    echo "Downloading insync-portable..."
+    curl -o /opt/insync-portable.tar.bz2 -L https://d2t3ff60b2tol4.cloudfront.net/test_builds/armhf/insync-armhf_1.3.17.36167_i386.tar.bz2
+    cd /opt
+    echo "Unpacking...."
+    tar -xjf insync-portable.tar.bz2
+    rm -f insync-portable.tar.bz2
+    mv insync* insync-tmp
+    mv insync-tmp/client insync-portable
+    rm -Rf insync-tmp
+    echo "Insync files in place. Continuing."
+
+
+
+    # Set up the account setup command
+    db_get insync/auth-code
+    AUTH_CODE="$RET"
+    db_get insync/account-path
+    ACCT_PATH="$RET"
+    db_get insync/file-type
+    FILE_TYPE="$RET"
+
+    cmd=
+    if [ -n "$AUTH_CODE" ]; then
+        cmd="insync-portable add_account -n -a '$AUTH_CODE'"
+        if [ -n "$ACCT_PATH" ]; then
+            ACCT_PATH="$(echo -n "$ACCT_PATH" | sed "s#~#$HOME#")"
+            cmd="$cmd -p '$ACCT_PATH'"
+        fi
+        if [ -n "$FILE_TYPE" ]; then
+            case "$FILE_TYPE" in
+                Open*) FILE_TYPE=open-document ;;
+                Google*) FILE_TYPE=link ;;
+                MS*) FILE_TYPE=ms-office ;;
+                *)
+                    >&2 echo "W: Bad file type passed: $FILE_TYPE. Assuming 'link'."
+                    FILE_TYPE=link
+                ;;
+            esac
+            cmd="$cmd -e '$FILE_TYPE'"
+        fi
+    fi
+
+
+    # only proceed if the service successfully started...
+    systemctl daemon-reload
+    if [ -n "$SUDO_USER" ] && systemctl enable --now "insync-portable@$SUDO_USER.service"; then
+        su -m -c "$cmd" "$SUDO_USER"
+    else
+        if [ -z "$cmd" ]; then
+            cmd="insync-portable add_account -a [auth-code] ..."
+        fi
+        >&2 echo
+        >&2 echo "E: Couldn't start insync service. You'll have to start it manually by typing"
+        >&2 echo "   \`sudo systemctl enable --now insync-portable@$SUDO_USER.service\`. When it's"
+        >&2 echo "   up and running, you can set up your account by running"
+        >&2 echo "   \`$cmd\`"
+        >&2 echo
+    fi
+
+
+
+# Run if triggered
+elif [ "$ACTION" == 'triggered' ]; then
+    echo "Trigger fired: $2"
+fi
+

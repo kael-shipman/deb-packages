@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ "$1" != 'upgrade' ]; then
+    systemctl disable --now insync-portable@
+    rm -Rf /opt/insync*
+    if [ "$1" == "purge" ]; then
+        rm -Rf /home/*/.config/Insync
+    fi
+fi
+

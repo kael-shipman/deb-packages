@@ -1,0 +1,12 @@
+Package: insync-portable
+Version: 0.1.0
+Section: nonfree
+Priority: optional
+Architecture: armhf
+Installed-Size: 25000
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: This package provides a generic install of insync-portable
+ It downloads the latest package from insync and unpacks it into /opt.
+ It also install an alias script, `insync-portable` at /usr/bin/ that
+ points to /opt.
+

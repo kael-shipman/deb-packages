@@ -1,3 +1,7 @@
 *.sw[op]
 *.bak
 *.local
+
+build/*
+
+~*/.gitkeep

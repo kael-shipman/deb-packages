@@ -1,0 +1,26 @@
+Template: insync/add-account
+Type: boolean
+Default: true
+Description: Would you like to set up a Google account for insync now?
+
+Template: insync/setup-complete
+Type: boolean
+Default: false
+Description: This is a non-user-editable field
+
+Template: insync/auth-code
+Type: string
+Description: Please go to https://goo.gl/jv797S and get an authorization code to enter here:
+
+Template: insync/account-path
+Type: string
+Description: Enter the root path on your computer for this account:
+ The default path to sync with Google Drive is ~/[email-address]
+
+Template: insync/file-type
+Type: select
+Choices: Open Office, Google Drive Link, MS Office
+Default: Google Drive Link
+Description: How would you like to sync documents to this computer?
+ This setting determines what format Google's native-format documents exist
+ as on this machine.

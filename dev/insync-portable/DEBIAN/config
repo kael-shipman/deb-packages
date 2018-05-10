@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+db_input high insync/add-account || true
+db_go
+
+db_get insync/add-account
+proceed="$RET"
+db_get insync/setup-complete
+finished="$RET"
+
+if [ "$proceed" == "true" ] && [ "$finished" == "false" ]; then
+    db_input high insync/auth-code || true
+    db_input high insync/account-path || true
+    db_input high insync/file-type || true
+    db_go
+
+    db_set insync/setup-complete "true"
+fi
+
