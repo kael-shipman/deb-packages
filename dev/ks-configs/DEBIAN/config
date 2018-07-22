@@ -4,10 +4,20 @@ set -e
 
 . /usr/share/debconf/confmodule
 
-LOOP=true
-ERR=
+if [ -z "$HOME" ]; then
+    if [ -n "$SUDO_USER" ]; then
+        HOME="/home/$SUDO_USER"
+    elif [ -n "$USER" ]; then
+        HOME="/home/$USER"
+    else
+        >&2 "E: Can't find \$HOME environment variable! Don't know what to do."
+        exit 1
+    fi
+fi
 
-while [ "$LOOP" == true ]; do
+LOOP="true"
+ERR=
+while [ "$LOOP" == "true" ]; do
     if [ -n "$ERR" ]; then
         db_subst ks-configs/runtime-path 'ERROR' "$ERR" || true
     fi
@@ -20,12 +30,12 @@ while [ "$LOOP" == true ]; do
         RUNTIME_PATH="$(readlink -f "$RUNTIME_PATH")"
     fi
 
-    if [ ! -d "$RUNTIME_PATH/Configs" ] || [ ! -d "$RUNTIME_PATH/Data" ]; then
+    if [ ! -d "$RUNTIME_PATH/Configs" ] && [ ! -d "$RUNTIME_PATH/Data" ]; then
         ERR="Hm... The path you entered doesn't look like a runtime path (can't find \`Data\` or \`Configs\` sub-directories)"
         db_fset ks-configs/runtime-path seen false
     else
         db_set ks-configs/runtime-path "$RUNTIME_PATH"
-        LOOP=false
+        LOOP="false"
     fi
 done
 
