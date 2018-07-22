@@ -1,0 +1,50 @@
+#!/bin/bash
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+ACTION="$1"
+if [ "$DEBCONF_RECONFIGURE" == '1' ]; then
+    ACTION="reconfigure"
+fi
+
+
+
+# Idempotent configurations
+if [ "$ACTION" != 'triggered' ]; then
+    # Add group
+    if ! grep -q '^nodejs-users:' /etc/group; then
+        echo "Creating group nodejs-users"
+        groupadd nodejs-users
+    fi
+
+    # Add users to group
+    db_get ks-nodejs/node-users
+    users="$RET"
+    while IFS= read -r -d $'\x1e' u; do
+        if ! id "$u" &>/dev/null; then
+            >&2 echo "E: User '$u', specified as member of nodejs-users group, doesn't exist."
+            continue
+        elif ! id -Gn "$u" | grep -q "\<nodejs-users\>"; then
+            echo "Adding user '$u' to nodejs-users group"
+            usermod -a -G nodejs-users "$u"
+        fi
+    done < <(echo "$users" | tr ' ' $'\x1e' | sed -r "s/([^"$'\x1e'"])$/\\1"$'\x1e'"/")
+
+    # Make sure the directory exists
+    mkdir -p /usr/lib/node_modules
+
+    # Set permissions on node_modules
+    if ! setfacl -Rm "group:nodejs-users:rwX,default:group:nodejs-users:rwX" /usr/lib/node_modules; then
+        >&2 echo "E: Couldn't set permissions on node_modules directory! You may have to take further action."
+    fi
+fi
+
+
+
+
+# Triggers
+#if [ "$ACTION" == 'triggered' ]; then
+#fi
+

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+. /usr/share/debconf/confmodule
+
+# Get nodejs users
+db_input high ks-nodejs/node-users || true
+db_go || true
+

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ "$1" != 'upgrade' ]; then
+    setfacl -Rx "group:nodejs-users,default:group:nodejs-users" /usr/lib/node_modules
+    groupdel nodejs-users
+fi
+
