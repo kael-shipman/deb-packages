@@ -1,0 +1,10 @@
+Package: ks-mountpoint
+Version: 1.0.0
+Section: free
+Priority: optional
+Architecture: all
+Depends: debconf
+Installed-Size: 0
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: A small package that simply determines the mountpoint of my file hierarchy
+
