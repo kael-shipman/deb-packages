@@ -1,0 +1,71 @@
+#!/bin/bash
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+ACTION="$1"
+if [ "$DEBCONF_RECONFIGURE" == '1' ]; then
+    ACTION="reconfigure"
+fi
+
+
+
+
+# Environment setup
+db_get ks-configs/runtime-path
+RT="$RET"
+if [ ! -d "$RT/Configs/thunderbird" ]; then
+    >&2 echo "E: can't find thunderbird folder at \`$RT/Configs/thunderbird\`"
+    exit 1
+fi
+
+if [ -z "$HOME" ]; then
+    >&2 echo "E: \$HOME not set. You should install this package using sudo with your normal user, rather than"
+    >&2 echo "   su for the root user."
+    exit 2
+fi
+mkdir -p "$HOME/.thunderbird"
+
+SRC_PRFDIR="$RT/Configs/thunderbird/btk9dfux.home"
+TARG_PRFDIR="$HOME/.thunderbird/btk9dfux.home"
+
+user="$(ls -ld "$HOME" | sed -r 's/^[^ ]+ [0-9]+ ([^ ]+).*$/\1/')"
+
+
+
+# Idempotent configurations
+if [ "$ACTION" != 'triggered' ]; then
+    # profiles.ini
+    ln -snf "$RT/Configs/thunderbird/profiles.ini" "$HOME/.thunderbird/"
+
+    # home profile directory
+    mkdir -p "$TARG_PRFDIR"
+
+    # link extensions directory
+    if [ -e "$TARG_PRFDIR/extensions" ] && [ ! -L "$TARG_PRFDIR/extensions" ]; then
+        rm -Rf "$TARG_PRFDIR/extensions"
+    fi
+    ln -snf "$SRC_PRFDIR/extensions" "$TARG_PRFDIR/"
+
+    # Make all other dirs non-linked and link in all files
+    while read -r -d $'\n' f; do
+        f="${f:2}"
+        if [ ! -L "$TARG_PRFDIR/$f" ]; then
+            rm -f "$TARG_PRFDIR/$f" &>/dev/null || true
+            mkdir -p "$(dirname "$TARG_PRFDIR/$f")"
+            ln -snf "$SRC_PRFDIR/$f" "$TARG_PRFDIR/$f"
+        fi
+    done < <(cd "$SRC_PRFDIR/" && find ! -type d ! -path './extensions/*')
+
+    # Chown everything
+    chown -R "$user:$user" "$HOME/.thunderbird"
+fi
+
+
+
+
+# Triggers
+#if [ "$ACTION" == 'triggered' ]; then
+#fi
+

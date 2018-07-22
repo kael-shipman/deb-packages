@@ -1,0 +1,10 @@
+Package: ks-thunderbird
+Version: 1.0.3
+Section: free
+Priority: optional
+Architecture: all
+Depends: thunderbird, ks-configs, debconf
+Installed-Size: 0
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: A package that sets up thunderbird with my preferences and addons from my personal config
+

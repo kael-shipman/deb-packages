@@ -1,0 +1,10 @@
+#!/bin/bash
+
+. /usr/share/debconf/confmodule
+
+if [ "$1" == 'purge' ]; then
+    if [ -n "$HOME" ]; then
+        rm -Rf "$HOME/.thunderbird/btk9dfux.home"
+    fi
+fi
+
