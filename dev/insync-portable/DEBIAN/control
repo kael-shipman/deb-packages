@@ -3,7 +3,7 @@ Version: 0.1.0
 Section: nonfree
 Priority: optional
 Architecture: armhf
-Installed-Size: 25000
+Installed-Size: 0
 Maintainer: Kael Shipman <kael.shipman@gmail.com>
 Description: This package provides a generic install of insync-portable
  It downloads the latest package from insync and unpacks it into /opt.
