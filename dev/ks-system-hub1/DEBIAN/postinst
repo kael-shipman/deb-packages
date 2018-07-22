@@ -11,21 +11,22 @@ fi
 
 
 
+function ln_reqd_config() {
+    if [ ! -e "$1" ]; then
+        >&2 echo "W: Required config file '$1' doesn't exist! You should fix this or things might night work correctly."
+    fi
+    ln -snf "$1" "$2"
+}
 
-# Set env vars
-nm=hub1
 
 
 
-
-
-# Don't run if upgrading from already-installed version
-if [ "$ACTION" != 'triggered' ] && ([ -z "$2" ] || [ "$ACTION" != 'configure' ]); then
-
-    # Get runtime path
+# Idempotent actions
+if [ "$ACTION" != 'triggered' ]; then
+    # Set env vars
+    nm=hub1
     db_get ks-configs/runtime-path
     RP="$RET"
-
 
     # Sanity check and installation preps
     if [ -n "$SUDO_USER" ]; then
@@ -33,18 +34,21 @@ if [ "$ACTION" != 'triggered' ] && ([ -z "$2" ] || [ "$ACTION" != 'configure' ])
     fi
     if [ -z "$HOME" ]; then
         >&2 echo "E: Your \$HOME variable isn't set, but this is necessary to install certain"
-        >&2 echo "   configurations. You should run this using 'sudo' from your normal user"
-        >&2 echo "   account, rather than using 'su'."
+        >&2 echo "   configurations. You should install this using 'sudo' from your normal user"
+        >&2 echo "   account, rather than using 'su' or the root account."
         exit 2
     fi
+
+
+    # Prepare config directories
     mkdir -p "$HOME/.config/syncthing"
 
 
     # Link Configs
-    ln -snf "$RP/Configs/ddnsd/$nm.config" /etc/ddnsd/config
-    ln -snf "$RP/Configs/hd-idle/$nm.config" /etc/default/hd-idle
-    ln -snf "$RP/Configs/syncthing/$nm.config.xml" "$HOME/.config/syncthing/config.xml"
-
+    ln_reqd_config "$RP/Configs/ddnsd/$nm.config" /etc/ddnsd/config
+    ln_reqd_config "$RP/Configs/hd-idle/$nm.config" /etc/default/hd-idle
+    ln_reqd_config "$RP/Configs/syncthing/$nm.config.xml" "$HOME/.config/syncthing/config.xml"
+fi
 
 
 
@@ -53,7 +57,6 @@ if [ "$ACTION" != 'triggered' ] && ([ -z "$2" ] || [ "$ACTION" != 'configure' ])
 
 
 # Run if triggered
-elif [ "$ACTION" == 'triggered' ]; then
-    echo "Trigger fired: $2"
-fi
+#if [ "$ACTION" == 'triggered' ]; then
+#fi
 

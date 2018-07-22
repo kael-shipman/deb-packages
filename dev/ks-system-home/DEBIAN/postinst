@@ -9,20 +9,19 @@ if [ "$DEBCONF_RECONFIGURE" == '1' ]; then
     ACTION="reconfigure"
 fi
 
+function ln_reqd_config() {
+    if [ ! -e "$1" ]; then
+        >&2 echo "W: Required config file '$1' doesn't exist! You should fix this or things might night work correctly."
+    fi
+    ln -snf "$1" "$2"
+}
 
 
 
-# Set env vars
-nm=home
-
-
-
-
-
-# Don't run if upgrading from already-installed version
-if [ "$ACTION" != 'triggered' ] && ([ -z "$2" ] || [ "$ACTION" != 'configure' ]); then
-
-    # Get runtime path
+# Idempotent
+if [ "$ACTION" != 'triggered' ]; then
+    # Set env vars
+    nm=home
     db_get ks-configs/runtime-path
     RP="$RET"
 
@@ -33,7 +32,7 @@ if [ "$ACTION" != 'triggered' ] && ([ -z "$2" ] || [ "$ACTION" != 'configure' ])
     fi
     if [ -z "$HOME" ]; then
         >&2 echo "E: Your \$HOME variable isn't set, but this is necessary to install certain"
-        >&2 echo "   configurations. You should run this using 'sudo' from your normal user"
+        >&2 echo "   configurations. You should install this using 'sudo' from your normal user"
         >&2 echo "   account, rather than using 'su'."
         exit 2
     fi
@@ -41,20 +40,12 @@ if [ "$ACTION" != 'triggered' ] && ([ -z "$2" ] || [ "$ACTION" != 'configure' ])
 
 
     # Link Configs
-    ln -snf "$RP/Configs/syncthing/$nm.config.xml" "$HOME/.config/syncthing/config.xml"
+    ln_reqd_config "$RP/Configs/syncthing/$nm.config.xml" "$HOME/.config/syncthing/config.xml"
 
-    systemctl enable --now syncthing@kael.timer
-
-
-
-
-
-
-
-
-# Run if triggered
-elif [ "$ACTION" == 'triggered' ]; then
-    echo "Trigger fired: $2"
+    user="$SUDO_USER"
+    if [ -z "$user" ]; then
+        user="$USER"
+    fi
+    systemctl enable --now "syncthing@$user.timer"
 fi
-
 

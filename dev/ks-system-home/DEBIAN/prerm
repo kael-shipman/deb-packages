@@ -3,7 +3,11 @@
 . /usr/share/debconf/confmodule
 
 if [ "$1" != 'upgrade' ]; then
-    systemctl disable --now syncthing@kael.timer
+    user="$SUDO_USER"
+    if [ -z "$user" ]; then
+        user="$USER"
+    fi
+    systemctl disable --now "syncthing@$user.timer"
     rm "$HOME/.config/syncthing/config.xml"
 fi
 
