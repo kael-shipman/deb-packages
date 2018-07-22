@@ -1,6 +1,6 @@
 Package: ks-
 Version: 0.1.0
-Section: contrib/ks
+Section: free
 Priority: optional
 Architecture: amd64
 Depends: 

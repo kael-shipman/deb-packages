@@ -9,12 +9,14 @@ if [ "$DEBCONF_RECONFIGURE" == '1' ]; then
     ACTION="reconfigure"
 fi
 
-# Don't run if upgrading from already-installed version
-if [ "$ACTION" != 'triggered' ] && ([ -z "$2" ] || [ "$ACTION" != 'configure' ]); then
-    echo "Installing for the first time, or reinstalling after failure...."
+# Idempotent configurations
+#if [ "$ACTION" != 'triggered' ]; then
+#fi
 
-# Run if triggered
-elif [ "$ACTION" == 'triggered' ]; then
-    echo "Trigger fired: $2"
-fi
+
+
+
+# Triggers
+#if [ "$ACTION" == 'triggered' ]; then
+#fi
 
