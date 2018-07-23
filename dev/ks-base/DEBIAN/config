@@ -1,0 +1,52 @@
+#!/bin/bash
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+if [ -z "$HOME" ]; then
+    if [ -n "$SUDO_USER" ]; then
+        HOME="/home/$SUDO_USER"
+    elif [ -n "$USER" ]; then
+        HOME="/home/$USER"
+    else
+        >&2 "E: Can't find \$HOME environment variable! Don't know what to do."
+        exit 1
+    fi
+fi
+
+err=
+passed="false"
+loops=0
+while [ "$passed" == "false" ]; do
+    if [ -n "$err" ]; then
+        db_subst ks-base/mountpoint ERROR "$err"
+    fi
+
+    db_input high ks-base/mountpoint || true
+    db_go
+
+    db_get ks-base/mountpoint
+    MOUNTPOINT="$(echo "$RET" | sed "s#~#$HOME#")"
+
+    if [ "$MOUNTPOINT" == "/" ]; then
+        err="ERROR: Your mountpoint is set as '/'. This cannot be."
+        db_fset ks-base/mountpoint seen false
+    else
+        passed="true"
+        if [ "$MOUNTPOINT" != "$RET" ]; then
+            db_set ks-base/mountpoint "$MOUNTPOINT"
+        fi
+    fi
+
+    # If we see we're just looping, we're probably caught. Just bail.
+    if [ "$loops" -ge 4 ]; then
+        >&2 echo "W: Caught in a loop. Bailing, but there may be problems."
+        passed="true"
+    fi
+    !((loops++))
+done
+
+db_input low ks-base/synced-dirs || true
+db_input high ks-base/linked-dirs || true
+db_go || true

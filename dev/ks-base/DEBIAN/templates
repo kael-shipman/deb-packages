@@ -1,0 +1,22 @@
+Template: ks-base/mountpoint
+Type: string
+Default: ~/.archive
+Description: Please enter the mountpoint of your personal file hierarchy:
+ NOTE: This should be the base path on which the partition is mounted, not necessarily
+ the path to your files. For example, if your files are at /media/kael/my-hdd/my-files,
+ then this path would be /media/kael/my-hdd.
+ .
+ ${ERROR}
+
+Template: ks-base/synced-dirs
+Type: string
+Default: Current Documents GDrive Jobs "Misc Syncs/Best-Of Photos" "Misc Syncs/New Cellphone Captures" Music Pictures Projects Reading Repos Runtime Setup Videos
+Description: Enter your top-level synced directories:
+ These directories should match up with directories synced by syncthing. Should be separated by
+ spaces and optionally enclosed in quotes.
+
+Template: ks-base/linked-dirs
+Type: string
+Default: Current Documents GDrive Jobs Music Pictures Projects Reading Repos Runtime Setup Videos
+Description: Enter the directories you want to link into your home directory:
+ Should be separated by spaces and optionally enclosed in quotes.

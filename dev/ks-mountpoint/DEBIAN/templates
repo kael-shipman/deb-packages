@@ -1,7 +1,0 @@
-Template: ks-mountpoint/mountpoint
-Type: string
-Default: ~/.archive
-Description: Please enter the mountpoint of your personal file hierarchy:
- NOTE: This should be the base path on which the partition is mount, not the path
- to your files. For example, if your files are at /media/kael/my-hdd/my-files, then
- this path would be /media/kael/my-hdd.
