@@ -1,8 +1,0 @@
-#!/bin/bash
-
-if [ "$1" != 'upgrade' ]; then
-    rm /etc/ddnsd/config
-    rm /etc/default/hd-idle
-    rm "$HOME/.config/syncthing/config.xml"
-fi
-

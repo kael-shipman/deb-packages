@@ -1,9 +1,9 @@
 Package: ks-system-home
-Version: 1.0.0
+Version: 1.1.0
 Section: free
 Priority: optional
 Architecture: amd64
-Depends: ks-configs, syncthing, golang-1.10-go
+Depends: ks-syncthing, golang-1.10-go
 Installed-Size: 0
 Maintainer: Kael Shipman <kael.shipman@gmail.com>
 Description: My home computer setup
