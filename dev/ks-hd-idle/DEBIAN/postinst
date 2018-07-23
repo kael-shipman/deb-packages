@@ -1,0 +1,68 @@
+#!/bin/bash
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+ACTION="$1"
+if [ "$DEBCONF_RECONFIGURE" == '1' ]; then
+    ACTION="reconfigure"
+fi
+
+
+# Idempotent configurations
+if [ "$ACTION" != 'triggered' ]; then
+    # Set env vars
+    db_get ks-base/sysname
+    sysname="$RET"
+    db_get ks-base/primary-user-home
+    home="$RET"
+    RP="$home/Runtime"
+    db_get ks-base/mountpoint
+    MOUNTPOINT="$RET"
+
+
+    # Link Configs
+    srcconf="$RP/Configs/hd-idle/$sysname.config"
+    targconf=/etc/default/hd-idle
+    if [ ! -e "$srcconf" ]; then
+        >&2 echo "W: Required config file '$srcconf' doesn't exist! You should fix this or things might night work correctly."
+        >&2 echo "   Installing anyway...."
+    fi
+    if [ -e "$targconf" ]; then
+        mv "$targconf" "$targconf.dpkg-old"
+    fi
+    ln -snf "$srcconf" "$targconf" || true
+
+
+    # Add custom systemd config
+    sysdconfdir="/etc/systemd/system/hd-idle.service.d"
+    mkdir -p "$sysdconfdir"
+
+    sysdmount="$(echo "$MOUNTPOINT" | sed -r 's#(^/|/$)##g' | sed 's#/#-#g').mount"
+    {
+        echo "[Unit]"
+        echo "Requires=$sysdmount"
+        echo "After=$sysdmount"
+    } > "$sysdconfdir/ksmountpoint.conf"
+    systemctl daemon-reload || true
+
+
+    # Enable and start hd-idle service (only on fresh install)
+    if [ -z "$2" ]; then
+        systemctl enable hd-idle.service || true
+        if ! systemctl is-active hd-idle.service &>/dev/null; then
+            systemctl start hd-idle.service || true
+        else
+            systemctl restart hd-idle.service || true
+        fi
+    fi
+fi
+
+
+
+
+# Triggers
+#if [ "$ACTION" == 'triggered' ]; then
+#fi
+

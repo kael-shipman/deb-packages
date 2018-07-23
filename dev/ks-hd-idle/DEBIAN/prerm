@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ "$1" != 'upgrade' ]; then
+    . /usr/share/debconf/confmodule
+
+    systemctl disable --now hd-idle.service || true
+    conf=/etc/defaults/hd-idle
+    rm "$conf"
+    if [ -e "$conf.dpkg-old" ]; then
+        mv "$conf.dpkg-old" "$conf"
+    fi
+    rm -Rf "/etc/systemd/system/hd-idle.service.d"
+fi
+
