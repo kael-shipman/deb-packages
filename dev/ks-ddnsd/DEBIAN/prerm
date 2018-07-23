@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ "$1" != 'upgrade' ]; then
+    . /usr/share/debconf/confmodule
+
+    systemctl disable --now ddnsd.service || true
+    rm /etc/ddnsd/config
+    rm -Rf "/etc/systemd/system/ddnsd.service.d"
+fi
+
