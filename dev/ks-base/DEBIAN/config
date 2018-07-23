@@ -93,3 +93,65 @@ db_input low ks-base/synced-dirs || true
 db_input high ks-base/linked-dirs || true
 db_go || true
 
+
+
+# Primary user
+db_get ks-base/primary-user
+primary_user="$RET"
+if [ -z "$primary_user" ]; then
+    if [ -n "$SUDO_USER" ]; then
+        primary_user="$SUDO_USER"
+    elif [ -n "$USER" ] && [ "$USER" != "root" ]; then
+        primary_user="$USER"
+    fi
+
+    if [ -n "$primary_user" ]; then
+        db_set ks-base/primary-user "$primary_user"
+    else
+        err=
+        tries=0
+        pass="false"
+        while [ "$pass" == "false" ]; do
+            if [ -n "$err" ]; then
+                db_subst ks-base/primary-user ERROR "$err"
+            fi
+            db_input high ks-base/primary-user || true
+            db_go || true
+
+            db_get ks-base/primary-user
+            primary_user="$RET"
+
+            if [ -z "$primary_user" ]; then
+                err="ERROR: Primary user cannot be blank"
+            else
+                pass="true"
+            fi
+
+            !((tries++))
+
+            if [ "$tries" -ge 4 ]; then
+                >&2 echo "W: Caught in a loop getting primary user. Bailing, but there may be problems."
+                pass="true"
+            fi
+        done
+    fi
+fi
+
+
+# Primary user home
+db_get ks-base/primary-user-home
+primary_user_home="$RET"
+if [ -z "$primary_user_home" ]; then
+    if [ -n "$primary_user" ]; then
+        if [ -d "/home/$primary_user" ]; then
+            db_set ks-base/primary-user-home "/home/$primary_user"
+        else
+            db_input high ks-base/primary-user-home || true
+        fi
+    else
+        db_input high ks-base/primary-user-home || true
+    fi
+    db_go || true
+fi
+
+

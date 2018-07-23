@@ -6,28 +6,21 @@ set -e
 
 
 if [ "$1" != "triggered" ]; then
-    # Get home directory
-    if [ -z "$HOME" ]; then
-        if [ -n "$SUDO_USER" ]; then
-            HOME="/home/$SUDO_USER"
-        elif [ -n "$USER" ]; then
-            HOME="/home/$USER"
-        else
-            >&2 "E: Can't find \$HOME environment variable! Don't know what to do."
-            exit 1
-        fi
-    fi
-
-    # Find the admin user
-    user="$SUDO_USER"
+    # Get primary user
+    db_get ks-base/primary-user
+    user="$RET"
     if [ -z "$user" ]; then
-        user="$USER"
-    fi
-    if [ "$user" == "root" ]; then
-        >&2 echo "E: You must run this install using sudo, not su (no viable user found to use as primary admin)"
-        exit 1
+        >&2 echo "E: Primary user not set. Can't continue."
+        exit 10
     fi
 
+    # Get home directory
+    db_get ks-base/primary-user-home
+    home="$RET"
+    if [ -z "$home" ]; then
+        >&2 echo "E: Primary user home directory not set. Can't continue."
+        exit 11
+    fi
 
     # Get the mountpoint
     db_get ks-base/mountpoint
@@ -107,18 +100,18 @@ if [ "$1" != "triggered" ]; then
     db_get ks-base/linked-dirs
     eval "linked=($RET)"
     for d in "${linked[@]}"; do
-        if [ ! -L "$HOME/$d" ]; then
-            if [ -d "$HOME/$d" ]; then
-                if [ "$(ls -A "$HOME/$d" | wc -l)" -gt 0 ]; then
-                    >&2 echo "E: Directory '$HOME/$d' already exists and has files in it."
+        if [ ! -L "$home/$d" ]; then
+            if [ -d "$home/$d" ]; then
+                if [ "$(ls -A "$home/$d" | wc -l)" -gt 0 ]; then
+                    >&2 echo "E: Directory '$home/$d' already exists and has files in it."
                     >&2 echo "   You must clean this up before proceeding with the install."
                     exit 4
                 else
-                    rmdir "$HOME/$d"
+                    rmdir "$home/$d"
                 fi
             fi
         fi
-        ln -snf "$FILEBASE/$d" "$HOME/"
+        ln -snf "$FILEBASE/$d" "$home/"
     done
 fi
 

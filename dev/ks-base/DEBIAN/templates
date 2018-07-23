@@ -34,3 +34,12 @@ Type: string
 Default: Current Documents GDrive Jobs Music Pictures Projects Reading Repos Runtime Setup Videos
 Description: Enter the directories you want to link into your home directory:
  Should be separated by spaces and optionally enclosed in quotes.
+
+Template: ks-base/primary-user
+Type: string
+Description: Enter your username:
+ ${ERROR}
+
+Template: ks-base/primary-user-home
+Type: string
+Description: Enter your home directory:
