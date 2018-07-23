@@ -15,6 +15,8 @@ if [ -z "$HOME" ]; then
     fi
 fi
 
+
+# Get mountpoint (with error checking)
 err=
 passed="false"
 loops=0
@@ -24,7 +26,7 @@ while [ "$passed" == "false" ]; do
     fi
 
     db_input high ks-base/mountpoint || true
-    db_go
+    db_go || true
 
     db_get ks-base/mountpoint
     MOUNTPOINT="$(echo "$RET" | sed "s#~#$HOME#")"
@@ -41,7 +43,43 @@ while [ "$passed" == "false" ]; do
 
     # If we see we're just looping, we're probably caught. Just bail.
     if [ "$loops" -ge 4 ]; then
-        >&2 echo "W: Caught in a loop. Bailing, but there may be problems."
+        >&2 echo "W: Caught in a loop getting mountpoint. Bailing, but there may be problems."
+        passed="true"
+    fi
+    !((loops++))
+done
+
+
+
+
+# Get filebase (with error checking)
+err=
+passed="false"
+loops=0
+while [ "$passed" == "false" ]; do
+    if [ -n "$err" ]; then
+        db_subst ks-base/filebase ERROR "$err"
+    fi
+
+    db_input high ks-base/filebase || true
+    db_go || true
+
+    db_get ks-base/filebase
+    FILEBASE="$(echo "$RET" | sed "s#~#$HOME#")"
+
+    if [ "$FILEBASE" == "/" ]; then
+        err="ERROR: Your filebase is set as '/'. This cannot be."
+        db_fset ks-base/filebase seen false
+    else
+        passed="true"
+        if [ "$FILEBASE" != "$RET" ]; then
+            db_set ks-base/filebase "$FILEBASE"
+        fi
+    fi
+
+    # If we see we're just looping, we're probably caught. Just bail.
+    if [ "$loops" -ge 4 ]; then
+        >&2 echo "W: Caught in a loop getting filebase. Bailing, but there may be problems."
         passed="true"
     fi
     !((loops++))
@@ -50,3 +88,4 @@ done
 db_input low ks-base/synced-dirs || true
 db_input high ks-base/linked-dirs || true
 db_go || true
+

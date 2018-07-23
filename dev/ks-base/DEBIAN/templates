@@ -1,10 +1,19 @@
 Template: ks-base/mountpoint
 Type: string
 Default: ~/.archive
-Description: Please enter the mountpoint of your personal file hierarchy:
+Description: Enter the mountpoint of your personal file hierarchy:
  NOTE: This should be the base path on which the partition is mounted, not necessarily
  the path to your files. For example, if your files are at /media/kael/my-hdd/my-files,
  then this path would be /media/kael/my-hdd.
+ .
+ ${ERROR}
+
+Template: ks-base/filebase
+Type: string
+Default: ~/.archive/archive
+Description: Enter the path to your top-level directories:
+ For example, if your files are at /media/kael/my-hdd/my-files, then this path would be
+ /media/kael/my-hdd/my-files.
  .
  ${ERROR}
 

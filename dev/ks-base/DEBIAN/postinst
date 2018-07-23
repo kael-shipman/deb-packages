@@ -71,12 +71,34 @@ if [ "$1" != "triggered" ]; then
     fi
 
 
-    # Make sure synced folders are created at mountpoint
+    # Get the filebase 
+    db_get ks-base/filebase
+    FILEBASE="$RET"
+
+    # Make sure it's not root
+    if [ "$FILEBASE" == "/" ]; then
+        >&2 echo "E: Filebase set to '/'. This cannot be. Manual intervention required."
+        exit 3
+    fi
+
+
+    # Make sure filebase exists and has correct ownership
+    if [ ! -d "$FILEBASE" ]; then
+        if [ -L "$FILEBASE" ]; then
+            >&2 echo "E: '$FILEBASE' points to a bad symlink. Not sure what to do."
+            exit 1
+        fi
+        mkdir -p "$FILEBASE"
+        chown "$user:$user" "$FILEBASE"
+    fi
+
+
+    # Make sure synced folders are created at filebase
     db_get ks-base/synced-dirs
     eval "synced=($RET)"
     for d in "${synced[@]}"; do
-        if [ ! -e "$MOUNTPOINT/$d" ]; then
-            mkdir -p "$MOUNTPOINT/$d"
+        if [ ! -e "$FILEBASE/$d" ]; then
+            mkdir -p "$FILEBASE/$d"
         fi
     done
 
@@ -95,8 +117,8 @@ if [ "$1" != "triggered" ]; then
                     rmdir "$HOME/$d"
                 fi
             fi
-            ln -snf "$MOUNTPOINT/$d" "$HOME/"
         fi
+        ln -snf "$FILEBASE/$d" "$HOME/"
     done
 fi
 
