@@ -1,6 +1,0 @@
-Template: ks-configs/runtime-path
-Type: string
-Default: ~/Runtime
-Description: Please enter the path of your runtime data and configs directory:
- ${ERROR}
-

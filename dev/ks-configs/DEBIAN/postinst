@@ -11,19 +11,20 @@ fi
 
 
 
-db_get ks-configs/runtime-path
-RUNTIME_PATH="$RET"
+if [ "$ACTION" != "triggered" ]; then
+    db_get ks-base/primary-user-home
+    RUNTIME_PATH="$RET/Runtime"
 
-if [ ! -d "$RUNTIME_PATH" ]; then
-    {
-        echo "Couldn't find runtime path \`$RUNTIME_PATH\`. Are you sure you've copied it over"
-        echo "to this instance yet?"
-        echo
-        echo "You'll have to ensure this directory is in place before proceeding with the install."
-    } >&2
-    exit 2
+    if [ ! -d "$RUNTIME_PATH/Configs" ] || [ ! -d "$RUNTIME_PATH/Data" ]; then
+        {
+            echo "E: Couldn't find runtime path \`$RUNTIME_PATH/Configs\` or"
+            echo "   \`$RUNTIME_PATH/Data\`. Are you sure you're set up correctly"
+            echo "   on this machine?"
+            echo
+            echo "   You'll have to ensure these directories are in place before proceeding with the install."
+        } >&2
+        exit 2
+    fi
 fi
-
-echo "Runtime configs found."
 
 

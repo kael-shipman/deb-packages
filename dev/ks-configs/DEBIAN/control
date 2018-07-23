@@ -1,9 +1,9 @@
 Package: ks-configs
-Version: 1.1.0
+Version: 1.1.1
 Section: free
 Priority: optional
 Architecture: all
-Depends: debconf
+Depends: ks-base (>= 1.0.2), debconf
 Installed-Size: 0
 Maintainer: Kael Shipman <kael.shipman@gmail.com>
 Description: A small package that simply ensures that the Runtime directory is in place before proceeding.
