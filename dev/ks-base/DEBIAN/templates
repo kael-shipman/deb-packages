@@ -1,3 +1,8 @@
+Template: ks-base/sysname
+Type: select
+Choices: home, kaelshipman.me, hub1
+Description: Select which system you're installing:
+
 Template: ks-base/mountpoint
 Type: string
 Default: ~/.archive

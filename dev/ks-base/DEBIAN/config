@@ -16,6 +16,10 @@ if [ -z "$HOME" ]; then
 fi
 
 
+db_input high ks-base/sysname || true
+db_go || true
+
+
 # Get mountpoint (with error checking)
 err=
 passed="false"
