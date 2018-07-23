@@ -1,0 +1,82 @@
+#!/bin/bash
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+ACTION="$1"
+if [ "$DEBCONF_RECONFIGURE" == '1' ]; then
+    ACTION="reconfigure"
+fi
+
+
+# Idempotent configurations
+if [ "$ACTION" != 'triggered' ]; then
+    # Set env vars
+    db_get ks-base/sysname
+    sysname="$RET"
+    db_get ks-base/primary-user
+    u="$RET"
+    db_get ks-base/primary-user-home
+    home="$RET"
+    RP="$home/Runtime"
+    db_get ks-base/mountpoint
+    MOUNTPOINT="$RET"
+
+    # Prepare config directories
+    mkdir -p "$home/.config/syncthing"
+
+
+    # Link Configs
+    srcconf="$RP/Configs/syncthing/$sysname.config.xml"
+    targconf="$home/.config/syncthing/config.xml"
+    if [ ! -e "$srcconf" ]; then
+        >&2 echo "W: Required config file '$srcconf' doesn't exist! You should fix this or things might night work correctly."
+        >&2 echo "   Installing anyway...."
+    fi
+    ln -snf "$srcconf" "$targconf" || true
+
+
+    # Add custom systemd config
+    sysdconfdir="/etc/systemd/system/syncthing@$u.service.d"
+    mkdir -p "$sysdconfdir"
+
+    sysdmount="$(echo "$MOUNTPOINT" | sed -r 's#(^/|/$)##g' | sed 's#/#-#g').mount"
+    {
+        echo "[Unit]"
+        echo "Requires=$sysdmount"
+        echo "After=$sysdmount"
+    } > "$sysdconfdir/ksmountpoint.conf"
+    systemctl daemon-reload || true
+
+
+    # Enable and start syncthing service for user
+
+    # (If home computer, then enable the _timer,_ not the service)
+    if [ "$sysname" == "home" ]; then
+        unit="syncthing@$u.timer"
+    else
+        unit="syncthing@$u.service"
+    fi
+
+    if ! systemctl is-enabled "$unit" >/dev/null; then
+        systemctl enable "$unit" || true
+    fi
+
+    # Regardless of which maching, try to start the service
+    if ! systemctl is-active "syncthing@$u.service" >/dev/null; then
+        if [ -e "$home/.config/syncthing/config.xml" ]; then
+            systemctl start "syncthing@$u.service" || true
+        else
+            >&2 echo "E: Config file for syncthing not found. Not starting service."
+        fi
+    fi
+fi
+
+
+
+
+# Triggers
+#if [ "$ACTION" == 'triggered' ]; then
+#fi
+

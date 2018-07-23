@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ "$1" != 'upgrade' ]; then
+    . /usr/share/debconf/confmodule
+    db_get ks-base/primary-user
+    u="$RET"
+    db_get ks-base/primary-user-home
+    home="$RET"
+
+    systemctl disable --now "syncthing@$u.service" || true
+    systemctl disable --now "syncthing@$u.timer" || true
+
+    rm "$home/.config/syncthing/config.xml"
+    if [ "$(ls -A "$home/.config/syncthing" | wc -l)" -eq 0 ]; then
+        rmdir "$home/.config/syncthing"
+    fi
+    rm -Rf "/etc/systemd/system/syncthing@$u.service.d"
+fi
+
