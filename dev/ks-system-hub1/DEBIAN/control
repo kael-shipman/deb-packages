@@ -1,9 +1,9 @@
 Package: ks-system-hub1
-Version: 0.2.2
+Version: 0.2.3
 Section: free
 Priority: optional
 Architecture: all
-Depends: ks-stubs-hub1, ks-syncthing, ks-hd-idle, ks-ddnsd, ddnsd-provider-name.com
+Depends: ks-stubs-hub1, ks-syncthing, ks-hd-idle, ks-ddnsd, ddnsd-provider-name.com, ks-insync-portable
 Provides: ks-system
 Installed-Size: 0
 Maintainer: Kael Shipman <kael.shipman@gmail.com>
