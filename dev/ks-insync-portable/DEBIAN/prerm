@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ "$1" != 'upgrade' ]; then
+    . /usr/share/debconf/confmodule
+
+    svcname="insync-portable@$SUDO_USER.service"
+    rm -Rf "/etc/systemd/system/$svcname.d/ksmountpoint.conf"
+    systemctl daemon-reload || true
+    if systemctl is-active "$svcname" >/dev/null; then
+        systemctl restart "$svcname" || true
+    fi
+fi
+

@@ -1,0 +1,11 @@
+Package: ks-insync-portable
+Version: 1.0.0
+Section: free
+Priority: optional
+Architecture: all
+Depends: ks-base (>= 1.0.2), insync-portable, debconf
+Installed-Size: 0
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: This package does a little bit of customization to make sure insync-portable is safe
+ for use with my standard system.
+
