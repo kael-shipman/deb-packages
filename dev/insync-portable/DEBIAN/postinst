@@ -4,25 +4,37 @@ set -e
 
 . /usr/share/debconf/confmodule
 
+next_ver="1.3.17.36167"
+
 ACTION="$1"
 if [ "$DEBCONF_RECONFIGURE" == '1' ]; then
     ACTION="reconfigure"
 fi
 
 # Only run this on a fresh install
-if [ "$ACTION" != 'triggered' ] && ([ -z "$2" ] || [ "$ACTION" != 'configure' ]); then
-    # Download and install
-    rm -Rf /opt/insync* || true
-    echo "Downloading insync-portable..."
-    curl -o /opt/insync-portable.tar.bz2 -L https://d2t3ff60b2tol4.cloudfront.net/test_builds/armhf/insync-armhf_1.3.17.36167_i386.tar.bz2
-    cd /opt
-    echo "Unpacking...."
-    tar -xjf insync-portable.tar.bz2
-    rm -f insync-portable.tar.bz2
-    mv insync* insync-tmp
-    mv insync-tmp/client insync-portable
-    rm -Rf insync-tmp
-    echo "Insync files in place. Continuing."
+if [ "$ACTION" != 'triggered' ]; then
+    # Try to get current insync version (for some reason they output on stderr)
+    if ! cur_ver=$(insync-portable -v 2>&1); then
+        cur_ver=0
+    fi
+
+    # Download and install, if next version is better
+    if dpkg --compare-versions "$next_ver" gt "$cur_ver"; then
+        rm -Rf /opt/insync* || true
+        echo "Downloading insync-portable..."
+        curl -o /opt/insync-portable.tar.bz2 -L "https://d2t3ff60b2tol4.cloudfront.net/test_builds/armhf/insync-armhf_${next_ver}_i386.tar.bz2"
+        cd /opt
+        if [ -e insync-portable ]; then
+            rm -Rf insync-portable
+        fi
+        echo "Unpacking...."
+        tar -xjf insync-portable.tar.bz2
+        rm -f insync-portable.tar.bz2
+        mv insync* insync-tmp
+        mv insync-tmp/client insync-portable
+        rm -Rf insync-tmp
+        echo "Insync files in place. Continuing."
+    fi
 
 
 
@@ -58,24 +70,50 @@ if [ "$ACTION" != 'triggered' ] && ([ -z "$2" ] || [ "$ACTION" != 'configure' ])
 
     # only proceed if the service successfully started...
     systemctl daemon-reload
-    if [ -n "$SUDO_USER" ] && systemctl enable --now "insync-portable@$SUDO_USER.service"; then
-        su -m -c "$cmd" "$SUDO_USER"
+    if [ -n "$SUDO_USER" ]; then
+        svcname="insync-portable@$SUDO_USER.service"
+        # Only enable it on first install (the admin may have disabled it manually after install)
+        if [ -z "$2" ]; then 
+            systemctl enable "$svcname" || true
+            if ! systemctl is-active "$svcname" >/dev/null; then
+                sysmtectl start "$svcname" || true
+            else
+                systemctl restart "$svcname" || true
+            fi
+
+        # Else if this is an upgrade, then only restart if it's already running
+        else
+            if systemctl is-active "$svcname" >/dev/null; then
+                systemctl restart "$svcname" || true
+            fi
+        fi
+
+        # If insync is turned on....
+        if systemctl is-active "$svcname"; then
+            # And if we haven't already set up the specified account...
+            if [ -z "$(insync-portable get_account_information)" ]; then
+                # And if we have a command to run...
+                if [ -n "$cmd" ]; then
+                    # Then run the command to set up the account
+                    su -m -c "$cmd" "$SUDO_USER"
+                fi
+            fi
+        fi
     else
         if [ -z "$cmd" ]; then
             cmd="insync-portable add_account -a [auth-code] ..."
         fi
         >&2 echo
-        >&2 echo "E: Couldn't start insync service. You'll have to start it manually by typing"
-        >&2 echo "   \`sudo systemctl enable --now insync-portable@$SUDO_USER.service\`. When it's"
+        >&2 echo "E: Couldn't figure out your user name. You'll have to start insync manually by typing"
+        >&2 echo "   \`sudo systemctl enable --now insync-portable@[your-user-name].service\`. When it's"
         >&2 echo "   up and running, you can set up your account by running"
         >&2 echo "   \`$cmd\`"
         >&2 echo
     fi
-
+fi
 
 
 # Run if triggered
-elif [ "$ACTION" == 'triggered' ]; then
-    echo "Trigger fired: $2"
-fi
+#if [ "$ACTION" == 'triggered' ]; then
+#fi
 
