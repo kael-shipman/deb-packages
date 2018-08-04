@@ -1,0 +1,10 @@
+Package: ks-system-ksm
+Version: 1.0.0
+Section: free
+Priority: optional
+Architecture: amd64
+Depends: ks-syncthing (>= 1.0.4), golang-1.10-go, peekaygee (>= 0.9.5), vim, git (>= 2.18.0)
+Installed-Size: 0
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: My home computer setup
+
