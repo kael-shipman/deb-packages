@@ -1,0 +1,47 @@
+#!/bin/bash
+
+set -e
+
+. /usr/share/debconf/confmodule
+
+db_get ks-base/primary-user-home
+home="$RET"
+db_get ks-base/filebase
+filebase="$RET"
+
+# If runtime path is not already set, try to set a reasonable default
+db_get ks-configs/runtime-path
+RUNTIME_PATH="$RET"
+if [ -z "$RUNTIME_PATH" ]; then
+    if [ -d "$home/Runtime/Configs"] && [ -d "$home/Runtime/Data" ]; then
+        db_set ks-configs/runtime-path "$home/Runtime"
+    elif [ -d "$filebase/Runtime/Configs" ] && [ -d "$filebase/Runtime/Data" ]; then
+        db_set ks-configs/runtime-path "$filebase/Runtime"
+    fi
+fi
+
+# Now confirm the runtime directory with the user
+LOOP="true"
+ERR=
+while [ "$LOOP" == "true" ]; do
+    if [ -n "$ERR" ]; then
+        db_subst ks-configs/runtime-path 'ERROR' "$ERR" || true
+    fi
+    db_input high ks-configs/runtime-path || true
+    db_go
+
+    db_get ks-configs/runtime-path
+    RUNTIME_PATH="$(echo "$RET" | sed "s#~#$home#")"
+    if [ -d "$RUNTIME_PATH" ]; then
+        RUNTIME_PATH="$(readlink -f "$RUNTIME_PATH")"
+    fi
+
+    if [ ! -d "$RUNTIME_PATH/Configs" ] && [ ! -d "$RUNTIME_PATH/Data" ]; then
+        ERR="Hm... The path you entered doesn't look like a runtime path (can't find \`Data\` or \`Configs\` sub-directories)"
+        db_fset ks-configs/runtime-path seen false
+    else
+        db_set ks-configs/runtime-path "$RUNTIME_PATH"
+        LOOP="false"
+    fi
+done
+

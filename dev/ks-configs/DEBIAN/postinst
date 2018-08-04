@@ -12,8 +12,8 @@ fi
 
 
 if [ "$ACTION" != "triggered" ]; then
-    db_get ks-base/primary-user-home
-    RUNTIME_PATH="$RET/Runtime"
+    db_get ks-configs/runtime-path
+    RUNTIME_PATH="$RET"
 
     if [ ! -d "$RUNTIME_PATH/Configs" ] || [ ! -d "$RUNTIME_PATH/Data" ]; then
         {
