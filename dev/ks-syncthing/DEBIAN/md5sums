@@ -1,1 +1,4 @@
-d8c9cbd6ba107ab4be218caa7fbfef82  usr/lib/systemd/system/syncthing@.timer
+8ac466f44948b4f81a658f4dd5a4d029  usr/bin/syncthing-config-watcher
+ecb24777ee335ac07ea6f071da7b08df  lib/systemd/system/syncthing-config-watcher.timer
+1d5467db56839c3a6d8d00e6b15f18d1  lib/systemd/system/syncthing-config-watcher.service
+d8c9cbd6ba107ab4be218caa7fbfef82  lib/systemd/system/syncthing@.timer

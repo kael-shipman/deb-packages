@@ -1,0 +1,11 @@
+[Unit]
+Description=Run syncthing config watcher service every hour
+After=multi-user.target
+
+[Timer]
+OnUnitActiveSec=1h
+
+[Install]
+WantedBy=timers.target
+
+

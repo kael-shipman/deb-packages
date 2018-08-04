@@ -32,9 +32,10 @@ if [ "$ACTION" != 'triggered' ]; then
     targconf="$home/.config/syncthing/config.xml"
     if [ ! -e "$srcconf" ]; then
         >&2 echo "W: Required config file '$srcconf' doesn't exist! You should fix this or things might night work correctly."
-        >&2 echo "   Installing anyway...."
+        >&2 echo "   Installing without machine-specific config...."
+    else
+        ln -snf "$srcconf" "$targconf" || true
     fi
-    ln -snf "$srcconf" "$targconf" || true
 
 
     # Add custom systemd config
@@ -52,8 +53,12 @@ if [ "$ACTION" != 'triggered' ]; then
 
     # Enable and start syncthing service for user
 
-    # (If home computer, then enable the _timer,_ not the service)
-    if [ "$sysname" == "home" ]; then
+    # On certain computers, enable the _timer,_ not the service
+    if [ "$sysname" == "home" ] || [ "$sysname" == "vivobook" ]; then
+        # Disable the service, if enabled
+        if systemctl is-enabled "syncthing@$u.service" >/dev/null; then
+            systemctl disable --now "syncthing@$u.service" || true
+        fi
         unit="syncthing@$u.timer"
     else
         unit="syncthing@$u.service"
@@ -63,13 +68,18 @@ if [ "$ACTION" != 'triggered' ]; then
         systemctl enable "$unit" || true
     fi
 
-    # Regardless of which maching, try to start the service
+    # Regardless of which machine, try to start the service
     if ! systemctl is-active "syncthing@$u.service" >/dev/null; then
         if [ -e "$home/.config/syncthing/config.xml" ]; then
             systemctl start "syncthing@$u.service" || true
         else
             >&2 echo "E: Config file for syncthing not found. Not starting service."
         fi
+    fi
+
+    # Start syncthing config watcher (first run only)
+    if dpkg --compare-versions "$2" lt "1.0.4"; then
+        systemctl enable --now syncthing-config-watcher.timer || true
     fi
 fi
 

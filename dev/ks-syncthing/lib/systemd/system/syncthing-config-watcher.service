@@ -1,0 +1,7 @@
+[Unit]
+Description=Watcher that replaces concrete syncthing config.xml with symlink to Runtime/Configs version of config.xml
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/syncthing-config-watcher
+

@@ -1,0 +1,61 @@
+#!/bin/bash
+
+set -e
+
+DB_GET="$(echo "get ks-configs/runtime-path" | debconf-communicate)"
+RESULT="$(echo "$DB_GET" | sed -r 's/^([0-9]+).*$/\1/')"
+RUNTIME_PATH="$(echo "$DB_GET" | sed -r 's/^[0-9]+ +(.*)$/\1/')"
+if [ "$RESULT" -gt 0 ]; then
+    >&2 echo "E: Couldn't find runtime path. Aborting."
+    exit "$RESULT"
+fi
+
+DB_GET="$(echo "get ks-base/sysname" | debconf-communicate)"
+RESULT="$(echo "$DB_GET" | sed -r 's/^([0-9]+).*$/\1/')"
+SYSNAME="$(echo "$DB_GET" | sed -r 's/^[0-9]+ +(.*)$/\1/')"
+if [ "$RESULT" -gt 0 ]; then
+    >&2 echo "E: Couldn't find sysname. Aborting."
+    exit "$RESULT"
+fi
+
+DB_GET="$(echo "get ks-base/primary-user" | debconf-communicate)"
+RESULT="$(echo "$DB_GET" | sed -r 's/^([0-9]+).*$/\1/')"
+PRIMARY_USER="$(echo "$DB_GET" | sed -r 's/^[0-9]+ +(.*)$/\1/')"
+if [ "$RESULT" -gt 0 ]; then
+    >&2 echo "E: Couldn't find primary user. Aborting."
+    exit "$RESULT"
+fi
+
+DB_GET="$(echo "get ks-base/primary-user-home" | debconf-communicate)"
+RESULT="$(echo "$DB_GET" | sed -r 's/^([0-9]+).*$/\1/')"
+PRIMARY_USER_HOME="$(echo "$DB_GET" | sed -r 's/^[0-9]+ +(.*)$/\1/')"
+if [ "$RESULT" -gt 0 ]; then
+    >&2 echo "E: Couldn't find primary user home. Aborting."
+    exit "$RESULT"
+fi
+
+# All prereqs met. Proceed.
+
+# IF the syncthing config file isn't a symlink, then move it over into our config directory
+# and symlink it back
+ST_CONFIG="$PRIMARY_USER_HOME/.config/syncthing/config.xml"
+SYSST_CONFIG="$RUNTIME_PATH/Configs/syncthing/$sysname.config.xml"
+ST_SVC="syncthing@$PRIMARY_USER.service"
+if [ -e "$ST_CONFIG" ] && [ ! -L "$ST_CONFIG" ]; then
+    >&2 echo "Config exists and is not a symlink. Storing config and replacing with symlink"
+
+    REACTIVATE="false"
+    if systemctl is-active "$ST_SVC" &>/dev/null; then
+        systemctl stop "$ST_SVC"
+        REACTIVATE="true"
+    fi
+
+    mv -f "$ST_CONFIG" "$SYSST_CONFIG"
+    ln -snf "$SYSST_CONFIG" "$ST_CONFIG"
+
+    if [ "$REACTIVATE" == "true" ]; then
+        >&2 echo "Restarting syncthing"
+        systemctl start "$ST_SVC"
+    fi
+fi
+
