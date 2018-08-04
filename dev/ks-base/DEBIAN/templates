@@ -1,6 +1,7 @@
 Template: ks-base/sysname
 Type: select
-Choices: home, kaelshipman.me, hub1
+Choices: home, vivobook, kaelshipman.me, hub1, other
+Default: other
 Description: Select which system you're installing:
 
 Template: ks-base/mountpoint
@@ -31,7 +32,7 @@ Description: Enter your top-level synced directories:
 
 Template: ks-base/linked-dirs
 Type: string
-Default: Current Documents GDrive Jobs Music Pictures Projects Reading Repos Runtime Setup Videos
+Default: Current Documents GDrive Jobs "Misc Syncs" Music Pictures Projects Reading Repos Runtime Setup Videos
 Description: Enter the directories you want to link into your home directory:
  Should be separated by spaces and optionally enclosed in quotes.
 

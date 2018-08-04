@@ -6,6 +6,14 @@ set -e
 
 
 if [ "$1" != "triggered" ]; then
+    # Get sysname
+    db_get ks-base/sysname
+    sysname="$RET"
+    if [ "$sysname" == "other" ]; then
+        >&2 echo "W: You've declared that the system you're installing is not in the current list of supported systems."
+        >&2 echo "   This may yield unexpected results. Proceeding with the install, but some packages may fail."
+    fi
+
     # Get primary user
     db_get ks-base/primary-user
     user="$RET"

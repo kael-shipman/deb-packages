@@ -70,8 +70,16 @@ fi
 
 
 
+# Sysname
 db_input high ks-base/sysname || true
 db_go || true
+db_get ks-base/sysname || true
+sysname="$RET"
+
+# If the sysname is 'other', we want to make sure to ask again
+if [ "$sysname" == "other" ]; then
+    db_fset ks-base/sysname seen false
+fi
 
 
 # Get mountpoint (with error checking)
@@ -143,6 +151,6 @@ while [ "$passed" == "false" ]; do
     !((loops++))
 done
 
-db_input low ks-base/synced-dirs || true
 db_input high ks-base/linked-dirs || true
+db_input high ks-base/synced-dirs || true
 db_go || true
