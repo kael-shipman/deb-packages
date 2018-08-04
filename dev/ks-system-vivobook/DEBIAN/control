@@ -1,0 +1,10 @@
+Package: ks-system-vivobook
+Version: 1.0.0
+Section: free
+Priority: optional
+Architecture: amd64
+Depends: ks-syncthing (>= 1.0.4), golang-1.10-go
+Installed-Size: 0
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: My vivobook setup
+
