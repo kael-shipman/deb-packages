@@ -39,7 +39,7 @@ fi
 # IF the syncthing config file isn't a symlink, then move it over into our config directory
 # and symlink it back
 ST_CONFIG="$PRIMARY_USER_HOME/.config/syncthing/config.xml"
-SYSST_CONFIG="$RUNTIME_PATH/Configs/syncthing/$sysname.config.xml"
+SYSST_CONFIG="$RUNTIME_PATH/Configs/syncthing/$SYSNAME.config.xml"
 ST_SVC="syncthing@$PRIMARY_USER.service"
 if [ -e "$ST_CONFIG" ] && [ ! -L "$ST_CONFIG" ]; then
     >&2 echo "Config exists and is not a symlink. Storing config and replacing with symlink"
