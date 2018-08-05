@@ -83,6 +83,14 @@ if [ "$ACTION" != 'triggered' ]; then
     if dpkg --compare-versions "$2" lt "1.0.4"; then
         systemctl enable --now syncthing-config-watcher.timer || true
     fi
+
+
+    # Increase file watch limit
+    CURLIM="$(cat /proc/sys/fs/inotify/max_user_watches)"
+    if [ -n "$CURLIM" ] && [ "$CURLIM" -lt "204800" ]; then
+        echo "fs.inotify.max_user_watches=204800" | sudo tee /etc/sysctl.d/90-ks-syncthing.conf >/dev/null || true
+        echo 204800 > /proc/sys/fs/inotify/max_user_watches
+    fi
 fi
 
 
