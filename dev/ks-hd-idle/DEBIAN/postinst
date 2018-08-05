@@ -39,12 +39,14 @@ if [ "$ACTION" != 'triggered' ]; then
     sysdconfdir="/etc/systemd/system/hd-idle.service.d"
     mkdir -p "$sysdconfdir"
 
-    sysdmount="$(echo "$MOUNTPOINT" | sed -r 's#(^/|/$)##g' | sed 's#/#-#g').mount"
-    {
-        echo "[Unit]"
-        echo "Requires=$sysdmount"
-        echo "After=$sysdmount"
-    } > "$sysdconfdir/ksmountpoint.conf"
+    if [ "$MOUNTPOINT" != "/" ]; then
+        sysdmount="$(echo "$MOUNTPOINT" | sed -r 's#(^/|/$)##g' | sed 's#/#-#g').mount"
+        {
+            echo "[Unit]"
+            echo "Requires=$sysdmount"
+            echo "After=$sysdmount"
+        } > "$sysdconfdir/ksmountpoint.conf"
+    fi
     systemctl daemon-reload || true
 
 

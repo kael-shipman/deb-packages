@@ -6,7 +6,6 @@ Description: Select which system you're installing:
 
 Template: ks-base/mountpoint
 Type: string
-Default: ~/.archive
 Description: Enter the mountpoint of your personal file hierarchy:
  NOTE: This should be the base path on which the partition is mounted, not necessarily
  the path to your files. For example, if your files are at /media/kael/my-hdd/my-files,

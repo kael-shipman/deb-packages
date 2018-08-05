@@ -21,21 +21,23 @@ if [ "$ACTION" != 'triggered' ]; then
     sysdconfdir="/etc/systemd/system/$svcname.d"
     mkdir -p "$sysdconfdir"
 
-    if [ ! -e "$sysdconfdir/ksmountpoint.conf" ]; then
-        sysdmount="$(echo "$MOUNTPOINT" | sed -r 's#(^/|/$)##g' | sed 's#/#-#g').mount"
-        {
-            echo "[Unit]"
-            echo "Requires=$sysdmount"
-            echo "After=$sysdmount"
-        } > "$sysdconfdir/ksmountpoint.conf"
-        systemctl daemon-reload || true
+    if [ "$MOUNTPOINT" != "/" ]; then
+        if [ ! -e "$sysdconfdir/ksmountpoint.conf" ]; then
+            sysdmount="$(echo "$MOUNTPOINT" | sed -r 's#(^/|/$)##g' | sed 's#/#-#g').mount"
+            {
+                echo "[Unit]"
+                echo "Requires=$sysdmount"
+                echo "After=$sysdmount"
+            } > "$sysdconfdir/ksmountpoint.conf"
+            systemctl daemon-reload || true
 
 
-        # Restart only if already started
-        if systemctl is-active "$svcname" >/dev/null; then
-            systemctl restart "$svcname" || true
-        else
-            >&2 echo "W: $svcname not active, so not starting"
+            # Restart only if already started
+            if systemctl is-active "$svcname" >/dev/null; then
+                systemctl restart "$svcname" || true
+            else
+                >&2 echo "W: $svcname not active, so not starting"
+            fi
         fi
     fi
 fi

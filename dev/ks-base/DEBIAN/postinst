@@ -34,13 +34,6 @@ if [ "$1" != "triggered" ]; then
     db_get ks-base/mountpoint
     MOUNTPOINT="$RET"
 
-    # Make sure it's not root
-    if [ "$MOUNTPOINT" == "/" ]; then
-        >&2 echo "E: Mountpoint set to '/'. This cannot be. Manual intervention required."
-        exit 3
-    fi
-
-
     # Make sure mountpoint exists and has correct ownership
     if [ ! -d "$MOUNTPOINT" ]; then
         if [ -L "$MOUNTPOINT" ]; then
@@ -48,27 +41,27 @@ if [ "$1" != "triggered" ]; then
             exit 1
         fi
         mkdir -p "$MOUNTPOINT"
-        chown "$user:$user" "$MOUNTPOINT"
     fi
 
 
-    # Make sure mountpoint is set up in fstab or systemd
-    gmnt="$(echo "$MOUNTPOINT" | sed 's#/$##')"
-    if ! egrep -wq "$gmnt/*" /etc/fstab; then
-        sysdmount="$(echo "$MOUNTPOINT" | sed -r 's#(^/|/$)##g' | sed 's#/#-#g').mount"
-        if ! systemctl list-units | grep -Fq "$sysdmount"; then
-            >&2 echo "E: Looks like mountpoint is not set up in fstab or systemd. You MUST set up and mount your data"
-            >&2 echo "   partition at '$MOUNTPOINT' before continuing."
-            exit 2
+    # Make sure mountpoint is set up in fstab or systemd (if not root)
+    if [ "$MOUNTPOINT" != "/" ]; then
+        gmnt="$(echo "$MOUNTPOINT" | sed 's#/$##')"
+        if ! egrep -wq "$gmnt/*" /etc/fstab; then
+            sysdmount="$(echo "$MOUNTPOINT" | sed -r 's#(^/|/$)##g' | sed 's#/#-#g').mount"
+            if ! systemctl list-units | grep -Fq "$sysdmount"; then
+                >&2 echo "E: Looks like mountpoint is not set up in fstab or systemd. You MUST set up and mount your data"
+                >&2 echo "   partition at '$MOUNTPOINT' before continuing."
+                exit 2
+            fi
         fi
-    fi
 
-
-    # Make sure mountpoint is mounted
-    if ! mount | grep -wq "$gmnt"; then
-        >&2 echo "E: You MUST MOUNT your data partition at '$MOUNTPOINT'"
-        >&2 echo "   before continuing"
-        exit 8
+        # Make sure mountpoint is mounted
+        if ! mount | grep -wq "$gmnt"; then
+            >&2 echo "E: You MUST MOUNT your data partition at '$MOUNTPOINT'"
+            >&2 echo "   before continuing"
+            exit 8
+        fi
     fi
 
 
@@ -107,13 +100,14 @@ if [ "$1" != "triggered" ]; then
     # Make sure home directories are properly linked
     db_get ks-base/linked-dirs
     eval "linked=($RET)"
+    DIRTY="false"
     for d in "${linked[@]}"; do
         if [ ! -L "$home/$d" ]; then
             if [ -d "$home/$d" ]; then
                 if [ "$(ls -A "$home/$d" | wc -l)" -gt 0 ]; then
+                    DIRTY="true"
                     >&2 echo "E: Directory '$home/$d' already exists and has files in it."
                     >&2 echo "   You must clean this up before proceeding with the install."
-                    exit 4
                 else
                     rmdir "$home/$d"
                 fi
@@ -121,5 +115,9 @@ if [ "$1" != "triggered" ]; then
         fi
         ln -snf "$FILEBASE/$d" "$home/"
     done
+
+    if [ "$DIRTY" == "true" ]; then
+        exit 4
+    fi
 fi
 

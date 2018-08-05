@@ -82,41 +82,6 @@ if [ "$sysname" == "other" ]; then
 fi
 
 
-# Get mountpoint (with error checking)
-err=
-passed="false"
-loops=0
-while [ "$passed" == "false" ]; do
-    if [ -n "$err" ]; then
-        db_subst ks-base/mountpoint ERROR "$err"
-    fi
-
-    db_input high ks-base/mountpoint || true
-    db_go || true
-
-    db_get ks-base/mountpoint
-    MOUNTPOINT="$(echo "$RET" | sed "s#~#$primary_user_home#")"
-
-    if [ "$MOUNTPOINT" == "/" ]; then
-        err="ERROR: Your mountpoint is set as '/'. This cannot be."
-        db_fset ks-base/mountpoint seen false
-    else
-        passed="true"
-        if [ "$MOUNTPOINT" != "$RET" ]; then
-            db_set ks-base/mountpoint "$MOUNTPOINT"
-        fi
-    fi
-
-    # If we see we're just looping, we're probably caught. Just bail.
-    if [ "$loops" -ge 4 ]; then
-        >&2 echo "W: Caught in a loop getting mountpoint. Bailing, but there may be problems."
-        passed="true"
-    fi
-    !((loops++))
-done
-
-
-
 
 # Get filebase (with error checking)
 err=
@@ -151,6 +116,34 @@ while [ "$passed" == "false" ]; do
     !((loops++))
 done
 
+# Set mountpoint based on filebase, if possible (and if not already set)
+IDENTIFIED_MOUNTPOINT=
+if [ -d "$FILEBASE" ]; then
+    db_get ks-base/mountpoint
+    MOUNTPOINT="$RET"
+    if [ -z "$MOUNTPOINT" ]; then
+        IDENTIFIED_MOUNTPOINT="$(df "$FILEBASE" | sed '2q;d' | sed -r 's/^[^ ]+ +[^ ]+ +[^ ]+ +[^ ]+ +[^ ]+ +(.+)$/\1/')"
+        db_set ks-base/mountpoint "$IDENTIFIED_MOUNTPOINT"
+    fi
+fi
+
+
+
+# Get mountpoint (Currently no possible error conditions identified, so no error checking)
+db_subst ks-base/mountpoint ERROR "Based on your file root, it looks like your mountpoint is '$IDENTIFIED_MOUNTPOINT'"
+db_input high ks-base/mountpoint || true
+db_go || true
+
+db_get ks-base/mountpoint
+MOUNTPOINT="$(echo "$RET" | sed "s#~#$primary_user_home#")"
+if [ "$MOUNTPOINT" != "$RET" ]; then
+    db_set ks-base/mountpoint "$MOUNTPOINT"
+fi
+
+
+
+
 db_input high ks-base/linked-dirs || true
 db_input high ks-base/synced-dirs || true
 db_go || true
+
