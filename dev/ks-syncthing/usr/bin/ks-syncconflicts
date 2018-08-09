@@ -1,0 +1,71 @@
+#!/bin/bash
+
+set -e
+
+SELF="$(basename "$0")"
+
+function echo_usage() {
+    echo
+    echo "SYNOPSIS"
+    echo "      $SELF ([options]) ([subtree])"
+    echo
+    echo "DESCRIPTION"
+    echo "      Show existing sync conflicts within the sync root or within [subtree], if specified, and"
+    echo "      optionally clear them."
+    echo
+    echo "OPTIONS"
+    echo "      -h|--help"
+    echo "          Show this help text"
+    echo
+    echo "      -d|--delete"
+    echo "          Delete all conflicts existing under [subtree], if specified, or all conflicts if"
+    echo "          [subtree] not specified."
+    echo
+}
+
+DELETE=0
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -h|--help) echo_usage && exit ;;
+        -d|--delete)
+            DELETE=1
+            shift
+            if echo "$1" | egrep -q "^[^-].+$"; then
+                SUBTREE="$1"
+                shift
+            fi
+        ;;
+
+        *)
+            echo "E: Unrecognized option '$1'"
+            exit 2
+        ;;
+    esac
+done
+
+FILEBASE="$(echo -n "GET ks-base/filebase" | debconf-communicate 2>/dev/null)"
+RES=$(echo "$FILEBASE" | egrep -o "^[0-9]+")
+FILEBASE="$(echo -n "$FILEBASE" | sed -r 's/^[0-9]+ (.*)$/\1/g')"
+
+if [ "$RES" != "0" ]; then
+    echo "E: Can't find filebase in debconf system. Are you sure ks-base package is set up?"
+    exit 3
+fi
+
+SEARCHPATH="$(echo -n "$FILEBASE/$SUBTREE" | sed -r 's#//+#/#g' | sed 's#/$##g')"
+
+if [ ! -d "$SEARCHPATH" ]; then
+    echo "E: Attempting to search in '$SUBTREE' subtree of '$FILEBASE', but that directory doesn't exist. Are you"
+    echo "   sure this is correct?"
+    exit 4
+fi
+
+if [ "$DELETE" -eq 1 ]; then
+    echo "Deleting sync conflicts in '$SEARCHPATH'...."
+    opts="-delete"
+else
+    echo "Finding sync conflicts in '$SEARCHPATH'...."
+fi
+echo
+find "$SEARCHPATH" -name '*sync-conflict*' $opts
+
