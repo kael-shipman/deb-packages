@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+if [ -z "$_ST_CONTEXT" ]; then
+    >&2 echo "E: You must call this plugin using the \`st\` executable."
+    >&2 echo
+    exit 2
+fi
+
+scan ffod2-qhvja

@@ -1,10 +1,10 @@
 Package: ks-syncthing
-Version: 1.1.0
+Version: 1.2.0
 Section: free
 Priority: optional
 Architecture: all
 Depends: ks-base (>= 1.0.2), ks-configs (>= 1.1.1), syncthing, debconf
-Installed-Size: 2
+Installed-Size: 4
 Maintainer: Kael Shipman <kael.shipman@gmail.com>
 Description: This package does a little bit of customization to make sure syncthing is safe
  for use with my standard system.
