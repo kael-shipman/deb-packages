@@ -21,11 +21,12 @@ function build() {
         pkg="dev/$pkg"
     fi
 
-    sudo cp -a "$pkg" build/
-    build_deb_package "$pkg" "build"
-    sudo rm -Rf "build/$(basename "$pkg")"
+    sudo cp -a "$pkg" "$builddir"
+    build_deb_package "$pkg" "$builddir"
+    sudo rm -Rf "$builddir/$(basename "$pkg")"
 }
 
+export builddir="./pkg-build"
 if [ "$#" -gt 0 ]; then
     while [ "$#" -gt 0 ]; do
         build "$1"
