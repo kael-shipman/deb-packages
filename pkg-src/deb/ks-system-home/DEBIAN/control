@@ -1,0 +1,10 @@
+Package: ks-system-home
+Version: ::VERSION::
+Section: free
+Priority: optional
+Architecture: amd64
+Depends: ks-syncthing (>= 1.0.4), golang-1.10-go, peekaygee (>= 0.9.5), php-cli (>= 7.1.0), vim, vlc, git (>= 2.18.0), artha, gparted, acl, gnucash, xfce4-xkb-plugin, screen, libreoffice, sqlite3, xfce4-goodies, redshift-gtk, wmctrl, curl, trash-cli
+Installed-Size: 0
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: My home computer setup
+

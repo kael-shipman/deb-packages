@@ -1,0 +1,10 @@
+Package: ks-system-vivobook
+Version: ::VERSION::
+Section: free
+Priority: optional
+Architecture: amd64
+Depends: ks-syncthing (>= 1.0.4), golang-1.10-go, peekaygee (>= 0.9.5), php-cli (>= 7.2.0), vim, vlc, gnucash, screen, git (>= 2.18.0), artha, gparted, acl, xfce4-xkb-plugin, sqlite3, xfce4-goodies, redshift-gtk, wmctrl, curl, trash-cli
+Installed-Size: 0
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: My vivobook setup
+

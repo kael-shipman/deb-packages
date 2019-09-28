@@ -1,0 +1,11 @@
+Package: ks-ddnsd
+Version: ::VERSION::
+Section: free
+Priority: optional
+Architecture: all
+Depends: ks-base (>= 1.0.2), ks-configs (>= 1.1.1), ddnsd, debconf
+Installed-Size: 0
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: This package does a little bit of customization to make sure ddnsd is safe
+ for use with my standard system.
+

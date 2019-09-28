@@ -1,0 +1,10 @@
+Package: ks-hd-idle
+Version: ::VERSION::
+Section: free
+Priority: optional
+Architecture: all
+Depends: ks-base (>= 1.0.2), ks-configs (>= 1.1.1), hd-idle (>= 1.0.0), debconf
+Installed-Size: 0
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: This package does a little bit of customization for hd-idle
+

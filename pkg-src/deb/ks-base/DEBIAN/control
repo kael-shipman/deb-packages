@@ -1,0 +1,11 @@
+Package: ks-base
+Version: ::VERSION::
+Section: free
+Priority: optional
+Architecture: all
+Depends: debconf
+Installed-Size: 2
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: A small package that gathers information about my system and makes sure everything
+ is in place and ready for further installs.
+

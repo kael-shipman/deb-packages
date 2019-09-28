@@ -1,0 +1,13 @@
+Package: ks-nodejs
+Version: ::VERSION::
+Section: free
+Priority: optional
+Architecture: all
+Depends: nodejs (>= 9.11), debconf
+Installed-Size: 0
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: This package sets up a little bit of convenient nodejs infrastructure
+ Among the features this package adds are:
+ .
+ * a 'nodejs-users' group with rwX permissions to /usr/lib/node_modules
+
