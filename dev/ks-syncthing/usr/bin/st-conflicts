@@ -24,21 +24,23 @@ function echo_usage() {
 }
 
 DELETE=0
+SUBTREE=
 while [ "$#" -gt 0 ]; do
     case "$1" in
         -h|--help) echo_usage && exit ;;
         -d|--delete)
             DELETE=1
             shift
-            if echo "$1" | egrep -q "^[^-].+$"; then
-                SUBTREE="$1"
-                shift
-            fi
         ;;
 
         *)
-            echo "E: Unrecognized option '$1'"
-            exit 2
+            if [ -z "$SUBTREE" ]; then
+                SUBTREE="$1"
+                shift
+            else
+                echo "E: Unrecognized option '$1'"
+                exit 2
+            fi
         ;;
     esac
 done

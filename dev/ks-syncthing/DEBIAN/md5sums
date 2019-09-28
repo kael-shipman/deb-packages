@@ -1,5 +1,5 @@
 0a71db490a89a4fdacb04767aba94016  dev/ks-syncthing/usr/bin/syncthing-config-watcher
-5c8513f85a7810de8142c9b138248a58  dev/ks-syncthing/usr/bin/st-list-conflicts
+4710769adf3e0b2e0e334727d2ac233e  dev/ks-syncthing/usr/bin/st-conflicts
 ee395f213d9abb625fab62658561e3e7  dev/ks-syncthing/usr/bin/st-scan-repos
 d8c9cbd6ba107ab4be218caa7fbfef82  dev/ks-syncthing/usr/lib/systemd/system/syncthing@.timer
 2afac4d0cc424869630e2de735cd07f6  dev/ks-syncthing/lib/systemd/system/syncthing-config-watcher.timer
