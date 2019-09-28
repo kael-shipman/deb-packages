@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if [ "$1" != 'upgrade' ]; then
+    update-alternatives --remove php /opt/php-7.1/bin/php
+fi
+

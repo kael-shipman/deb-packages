@@ -1,0 +1,10 @@
+Package: ks-php
+Version: 7.1.14-1
+Section: free
+Priority: optional
+Architecture: armhf
+Provides: php (>=7.0), php (<< 7.2), php7.1
+Installed-Size: 0
+Maintainer: Kael Shipman <kael.shipman@gmail.com>
+Description: A custom-compiled PHP version for my raspberry pi
+

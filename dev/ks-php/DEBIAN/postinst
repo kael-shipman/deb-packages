@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+#. /usr/share/debconf/confmodule
+
+ACTION="$1"
+if [ "$DEBCONF_RECONFIGURE" == '1' ]; then
+    ACTION="reconfigure"
+fi
+
+if [ "$ACTION" != "triggered" ]; then
+    update-alternatives  --install /usr/bin/php php /opt/php-7.1/bin/php 100
+fi
+
