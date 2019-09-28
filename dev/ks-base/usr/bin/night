@@ -1,0 +1,6 @@
+#!/bin/bash
+targ=~/.config/xfce4/terminal/terminalrc
+if [ -e "$targ" ] && [ ! -l "$targ" ]; then
+  mv "$targ" "$targ.bak"
+fi
+ln -snf /usr/share/ks-base/terminalrc.night "$targ"
