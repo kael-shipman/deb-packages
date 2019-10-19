@@ -1,7 +1,7 @@
 #!/bin/bash
 
 targ=~/.config/xfce4/terminal/terminalrc
-if [ -e "$targ" ] && [ ! -l "$targ" ]; then
+if [ -e "$targ" ] && [ ! -L "$targ" ]; then
   mv "$targ" "$targ.bak"
 fi
 ln -snf /usr/share/ks-base/terminalrc.day "$targ"
