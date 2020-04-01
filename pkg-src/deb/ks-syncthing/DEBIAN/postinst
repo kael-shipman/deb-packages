@@ -54,18 +54,7 @@ if [ "$ACTION" != 'triggered' ]; then
 
 
     # Enable and start syncthing service for user
-
-    # On certain computers, enable the _timer,_ not the service
-    if [ "$sysname" == "home" ] || [ "$sysname" == "vivobook" ]; then
-        # Disable the service, if enabled
-        if systemctl is-enabled "syncthing@$u.service" >/dev/null; then
-            systemctl disable --now "syncthing@$u.service" || true
-        fi
-        unit="syncthing@$u.timer"
-    else
-        unit="syncthing@$u.service"
-    fi
-
+    unit="syncthing@$u.service"
     if ! systemctl is-enabled "$unit" >/dev/null; then
         systemctl enable "$unit" || true
     fi
